@@ -9,7 +9,7 @@ if img.exists():
     b64 = base64.b64encode(img.read_bytes()).decode()
     lay = (f'<img src="data:image/png;base64,{b64}" alt="Layout GDS del tile 1x1 en GF180" '
            'style="width:100%;border-radius:6px;background:#000">'
-           '<p class="note">Render del GDS final (346.64 × 160.72 µm) generado por el flujo de Tiny Tapeout.</p>')
+           '<p class="note">Render del GDS final (346.64 × 160.72 µm) del flujo de Tiny Tapeout: 211 flip-flops, 64.6 % de uso en placement, sin violaciones de setup ni hold a 10 MHz.</p>')
 else:
     lay = ('<p class="note">El render del GDS se agrega aquí cuando termina el flujo de Tiny Tapeout. '
            'Mientras tanto, el visor 3D estará en <a href="https://glimmerquark-cloud.github.io/tt-voz-formantes/" '

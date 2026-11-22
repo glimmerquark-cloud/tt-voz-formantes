@@ -1,183 +1,126 @@
 <title>Chip que habla</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: hoja de datos de laboratorio. Columna unica; el "instrumento" (entrada + trazas) arriba, el chip explicado abajo. */
 :root {
-  --bg: #eef1f5;
-  --panel: #ffffff;
-  --ink: #15203a;
-  --muted: #5b6680;
-  --line: #d3d9e4;
-  --accent: #3b46c9;
-  --accent-soft: #e3e5fb;
-  --f1: #c2410c;
-  --f2: #0f766e;
-  --f3: #7c3aed;
-  --wave: #15203a;
-  --grid: #e4e8ef;
-  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --bg: #ffffff; --ink: #222; --muted: #666; --line: #ccc; --link: #0645ad;
+  --accent: #0645ad; --accent-soft: #dde6f7;
+  --f1: #c0392b; --f2: #1e8449; --f3: #7d3c98; --wave: #222; --grid: #eee;
+  --mono: Consolas, "DejaVu Sans Mono", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e1424; --panel: #151d31; --ink: #e6eaf4; --muted: #95a0ba; --line: #2a3550;
-    --accent: #8f97ff; --accent-soft: #232a52; --f1: #fb923c; --f2: #2dd4bf; --f3: #c4a1ff;
-    --wave: #dfe5f3; --grid: #1f2840; color-scheme: dark;
+    --bg: #1b1b1b; --ink: #ddd; --muted: #999; --line: #444; --link: #8ab4f8;
+    --accent: #8ab4f8; --accent-soft: #2a3447; --f1: #ff7b6b; --f2: #5fd38d; --f3: #c39bd3; --wave: #ddd; --grid: #2c2c2c; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0e1424; --panel: #151d31; --ink: #e6eaf4; --muted: #95a0ba; --line: #2a3550;
-  --accent: #8f97ff; --accent-soft: #232a52; --f1: #fb923c; --f2: #2dd4bf; --f3: #c4a1ff;
-  --wave: #dfe5f3; --grid: #1f2840; color-scheme: dark;
+  --bg: #1b1b1b; --ink: #ddd; --muted: #999; --line: #444; --link: #8ab4f8;
+  --accent: #8ab4f8; --accent-soft: #2a3447; --f1: #ff7b6b; --f2: #5fd38d; --f3: #c39bd3; --wave: #ddd; --grid: #2c2c2c; color-scheme: dark;
 }
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
-.wrap { max-width: 980px; margin: 0 auto; padding-block: 28px 56px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex; flex-direction: column; gap: 28px; }
-header { display: flex; flex-direction: column; gap: 6px; }
-.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-h1 { font: 700 clamp(30px, 5vw, 44px)/1.05 var(--display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
-h2 { font: 700 20px/1.2 var(--display); margin: 0; text-wrap: balance; }
-.lede { color: var(--muted); max-width: 64ch; margin: 0; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-textarea { width: 100%; min-height: 64px; resize: vertical; font: 500 20px/1.35 var(--body); color: var(--ink);
-  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-textarea:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-button { font: 600 14px/1 var(--body); border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 14px; cursor: pointer; }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); padding: 11px 20px; font-size: 15px; }
-button.chip { font-weight: 500; font-size: 13px; padding: 7px 11px; }
-button:hover { border-color: var(--accent); }
-label.ctl { display: flex; align-items: center; gap: 8px; font: 13px var(--mono); color: var(--muted); }
-label.ctl output { min-width: 3.5ch; color: var(--ink); font-variant-numeric: tabular-nums; }
-input[type=range] { width: 110px; accent-color: var(--accent); }
-.phon { display: flex; flex-wrap: wrap; gap: 4px; font: 500 14px/1 var(--mono); }
-.phon span { padding: 6px 7px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line); }
-.phon span.ton { border-color: var(--accent); }
-.phon span.pause { color: var(--muted); }
-.phon span.on { background: var(--accent); color: var(--panel); border-color: var(--accent); }
-.scope { width: 100%; display: block; border-radius: 6px; background: var(--bg); }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font: 12px var(--mono); color: var(--muted); }
-.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
-.stat { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.diagram { overflow-x: auto; }
-.diagram svg { min-width: 640px; width: 100%; height: auto; display: block; }
-table { border-collapse: collapse; width: 100%; font-size: 14px; }
-td, th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font: 500 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-td.num, td code { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; }
+.page { max-width: 720px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 28px 0 8px; }
+a { color: var(--link); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.small { font-size: 14px; color: var(--muted); }
+textarea { width: 100%; box-sizing: border-box; font: 18px/1.4 inherit; font-family: inherit; padding: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+button { font: inherit; font-size: 15px; padding: 3px 10px; cursor: pointer; }
+#hablar { font-weight: bold; padding: 4px 16px; }
+input[type=range] { vertical-align: middle; width: 120px; }
+output { font-family: var(--mono); font-size: 14px; }
+.phon { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-top: 8px; word-break: break-word; }
+.phon span { padding: 0 2px; }
+.phon span.ton { color: var(--ink); font-weight: bold; }
+.phon span.pause { color: var(--line); }
+.phon span.on { background: var(--accent); color: var(--bg); }
+.stat { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+canvas { width: 100%; display: block; border: 1px solid var(--line); margin-top: 6px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+pre { font-family: var(--mono); font-size: 13px; line-height: 1.35; background: var(--grid); padding: 10px; overflow-x: auto; }
+code { font-family: var(--mono); font-size: 14px; }
+table { border-collapse: collapse; font-size: 15px; width: 100%; }
+td, th { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .tablewrap { overflow-x: auto; }
-p { margin: 0; max-width: 68ch; }
-a { color: var(--accent); }
-.note { font-size: 13px; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+#layout img { border-radius: 0 !important; margin-top: 4px; }
+.note { font-size: 14px; color: var(--muted); }
+.legend span { margin-right: 12px; font-size: 14px; }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 4px; }
 </style>
 
-<div class="wrap">
-  <header>
-    <span class="eyebrow">Tiny Tapeout GF180 · tile 1x1 · tt_um_glimmerquark_voz</span>
-    <h1>Chip que habla</h1>
-    <p class="lede">Escribe en español y escucha la voz del chip. El sonido sale del <strong>modelo bit-exacto</strong> del silicio: cada muestra es la misma que produce el RTL en simulación. Corre a 9765.6 Hz con muestras de 8 bits.</p>
-  </header>
+<div class="page">
+<h1>Chip que habla</h1>
+<div class="small">Irvin Ariel Madrid Castillo. Proyecto para Tiny Tapeout GF 26c (bootcamp IEEE Open Silicon). Última actualización: 21 nov 2026.</div>
 
-  <section class="panel" aria-label="Sintetizador">
-    <textarea id="txt" aria-label="Texto a decir">Hola, IEEE</textarea>
-    <div class="row">
-      <button class="primary" id="hablar">▶ Hablar</button>
-      <button class="chip" data-t="Hola, IEEE">Hola, IEEE</button>
-      <button class="chip" data-t="a, e, i, o, u">Vocales</button>
-      <button class="chip" data-t="Hola, soy un chip de silicio que habla español.">Presentación</button>
-      <button class="chip" data-t="Buenos días, Open Silicon dos mil veintiséis.">Bootcamp</button>
-    </div>
-    <div class="row">
-      <label class="ctl" for="tono">tono <input type="range" id="tono" min="0.6" max="1.8" step="0.05" value="1"><output id="tonoV">1.00</output></label>
-      <label class="ctl" for="tasa">velocidad <input type="range" id="tasa" min="0.6" max="1.6" step="0.05" value="1"><output id="tasaV">1.00</output></label>
-      <span class="stat" id="stat"></span>
-    </div>
-    <div class="phon" id="phon" aria-label="Fonemas"></div>
-  </section>
+<p>Es un sintetizador de voz por formantes que cabe en un tile 1x1 de Tiny Tapeout (346 x 160 µm, GF180). La parte de texto a fonemas corre en el RP2350 de la tarjeta en MicroPython. El chip solo recibe cada 5 ms tres frecuencias de formante, el tono y el volumen, y genera el audio.</p>
 
-  <section class="panel" aria-label="Trazas">
-    <div class="row" style="justify-content:space-between">
-      <h2>Formantes y salida</h2>
-      <div class="legend"><span><i style="background:var(--f1)"></i>F1</span><span><i style="background:var(--f2)"></i>F2</span><span><i style="background:var(--f3)"></i>F3</span><span><i style="background:var(--wave)"></i>out8</span></div>
-    </div>
-    <canvas class="scope" id="track" height="300" aria-label="Formantes en el tiempo y forma de onda de salida"></canvas>
-    <div class="grid2">
-      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-        <span class="eyebrow">Fuente (diente de sierra / ruido) · 40 ms</span>
-        <canvas class="scope" id="zsrc" height="120" aria-label="Detalle de la fuente"></canvas>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-        <span class="eyebrow">Salida tras F1·F2·F3 · 40 ms</span>
-        <canvas class="scope" id="zout" height="120" aria-label="Detalle de la salida"></canvas>
-      </div>
-    </div>
-    <p class="note">Haz clic en la traza de arriba para ver de cerca ese momento.</p>
-  </section>
+<p>Lo de abajo usa el modelo en Python del chip, que pasé a JavaScript. Da exactamente las mismas muestras que la simulación del Verilog (lo comprobé con los tests de cocotb), así que debería sonar igual que el chip real. Suena robótico, eso es normal.</p>
 
-  <section class="panel" aria-label="Arquitectura">
-    <h2>Cómo lo hace el chip</h2>
-    <div class="diagram">
-      <svg viewBox="0 0 900 250" role="img" aria-label="Diagrama de bloques">
-        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
-        <g font-family="var(--mono)" font-size="12" fill="var(--ink)">
-          <rect x="12" y="12" width="876" height="54" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
-          <text x="28" y="35" font-family="var(--display)" font-size="15" font-weight="700">RP2350 (MicroPython)</text>
-          <text x="28" y="55" fill="var(--muted)">texto → fonemas → cada 5 ms escribe B1, B2, B3, pitch, amplitud/modo por ui_in + uio_in</text>
-          <line x1="450" y1="66" x2="450" y2="96" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-          <rect x="12" y="100" width="876" height="138" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-          <text x="28" y="122" fill="var(--muted)">chip · 10 MHz · 1024 ciclos por muestra · usa 62</text>
-          <rect x="28" y="140" width="128" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
-          <text x="40" y="164">fuente</text><text x="40" y="184" fill="var(--muted)" font-size="11">sierra · LFSR</text>
-          <rect x="186" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f1)"/>
-          <text x="198" y="164">F1</text><text x="198" y="184" fill="var(--muted)" font-size="11">2 polos</text>
-          <rect x="312" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f2)"/>
-          <text x="324" y="164">F2</text><text x="324" y="184" fill="var(--muted)" font-size="11">2 polos</text>
-          <rect x="438" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f3)"/>
-          <text x="450" y="164">F3</text><text x="450" y="184" fill="var(--muted)" font-size="11">2 polos</text>
-          <rect x="564" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
-          <text x="576" y="164">× amp</text><text x="576" y="184" fill="var(--muted)" font-size="11">8 bits</text>
-          <rect x="690" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
-          <text x="702" y="164">ΣΔ 1er</text><text x="702" y="184" fill="var(--muted)" font-size="11">orden</text>
-          <text x="808" y="168">uo[0]</text><text x="808" y="186" fill="var(--muted)" font-size="11">→ RC</text>
-          <g stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)">
-            <line x1="156" y1="171" x2="184" y2="171"/><line x1="282" y1="171" x2="310" y2="171"/>
-            <line x1="408" y1="171" x2="436" y2="171"/><line x1="534" y1="171" x2="562" y2="171"/>
-            <line x1="660" y1="171" x2="688" y2="171"/><line x1="786" y1="171" x2="804" y2="171"/>
-          </g>
-          <path d="M234 202 v18 H612 v-18" fill="none" stroke="var(--accent)" stroke-dasharray="4 3"/>
-          <text x="300" y="232" fill="var(--accent)" font-size="11">un multiplicador serial (12 ciclos) y un sumador de 17 bits, compartidos</text>
-        </g>
-      </svg>
-    </div>
-    <div class="grid2">
-      <p>Cada resonador calcula <code>y[n] = B·y[n−1] − (1−2⁻⁴)·y[n−2] + x[n]</code>.</p>
-      <p>El coeficiente <code>B = 2r·cos(2πF/fs)</code> elige la frecuencia del formante. El ancho de banda es fijo, ~97 Hz, y por eso el término en y[n−2] se reduce a un corrimiento y una resta.</p>
-      <p>Los estados son de 14 bits con saturación y van en un anillo que rota, así no hacen falta multiplexores de lectura.</p>
-      <p>La amplitud se aplica a la salida. La fuente siempre entra a los filtros a escala completa, con una atenuación de 2⁻ˢʰ elegida por fonema para que ningún resonador sature. Así el ruido de redondeo queda abajo.</p>
-    </div>
-    <div class="tablewrap">
-      <table>
-        <tr><th>addr</th><th>registro</th><th>formato</th></tr>
-        <tr><td class="num">0–2</td><td>B1, B2, B3</td><td>Q2.10 con signo; B3 guarda 7 bits (~25 Hz de resolución)</td></tr>
-        <tr><td class="num">3</td><td>pitch</td><td>10 bits, F0 = inc · fs / 8192 (pasos de 1.19 Hz)</td></tr>
-        <tr><td class="num">4</td><td>amp / modo / sh</td><td>[7:0] amplitud · [9:8] silencio, voz, ruido, mixto · [11:10] atenuación 2⁻ˢʰ</td></tr>
-      </table>
-    </div>
-  </section>
+<h2>Pruébalo</h2>
+<textarea id="txt" rows="2" aria-label="Texto">Hola, IEEE</textarea>
+<p style="margin:6px 0">
+  <button id="hablar">Hablar</button>
+  &nbsp; ejemplos:
+  <button class="chip" data-t="Hola, IEEE">Hola, IEEE</button>
+  <button class="chip" data-t="a, e, i, o, u">vocales</button>
+  <button class="chip" data-t="Hola, soy un chip de silicio que habla español.">presentación</button>
+  <button class="chip" data-t="Buenos días, Open Silicon dos mil veintiséis.">buenos días</button>
+</p>
+<p style="margin:6px 0">
+  <label for="tono">tono</label> <input type="range" id="tono" min="0.6" max="1.8" step="0.05" value="1"> <output id="tonoV">1.00</output>
+  &nbsp;&nbsp;
+  <label for="tasa">velocidad</label> <input type="range" id="tasa" min="0.6" max="1.6" step="0.05" value="1"> <output id="tasaV">1.00</output>
+</p>
+<div class="phon" id="phon"></div>
+<div class="stat" id="stat"></div>
 
-  <section class="panel" aria-label="Layout" id="layout">
-    <h2>Layout</h2>
-    <!--LAYOUT-->
-  </section>
+<p class="legend small" style="margin:14px 0 0"><span><i style="background:var(--f1)"></i>F1</span><span><i style="background:var(--f2)"></i>F2</span><span><i style="background:var(--f3)"></i>F3</span><span><i style="background:var(--wave)"></i>salida</span></p>
+<canvas id="track" height="300"></canvas>
+<p class="note">Arriba los formantes que manda el micro, abajo la salida de 8 bits. Con un clic eliges qué parte se ve en detalle aquí abajo (40 ms):</p>
+<div class="two">
+  <div><span class="small">fuente (sierra o ruido)</span><canvas id="zsrc" height="120"></canvas></div>
+  <div><span class="small">salida después de los filtros</span><canvas id="zout" height="120"></canvas></div>
+</div>
 
-  <p class="note">Código, pruebas cocotb y WAVs de simulación RTL en <a href="https://github.com/glimmerquark-cloud/tt-voz-formantes" target="_blank" rel="noopener">github.com/glimmerquark-cloud/tt-voz-formantes</a>. Autor: Irvin Ariel Madrid Castillo · IEEE Open Silicon 2026.</p>
+<h2>Cómo funciona</h2>
+<p>Cada formante es un resonador de 2 polos:</p>
+<pre>y[n] = B*y[n-1] - (1 - 1/16)*y[n-2] + x[n]        B = 2r*cos(2*pi*F/fs)</pre>
+<p>El ancho de banda lo dejé fijo (~97 Hz). Así r² = 1 - 1/16 y esa parte es un shift y una resta, sin multiplicar. Para la otra multiplicación hay un solo multiplicador serial (12 ciclos) que usan los tres filtros y el volumen. Con reloj de 10 MHz y fs = 10 MHz/1024 = 9765 Hz tengo 1024 ciclos por muestra y uso 62, así que sobra tiempo. Al principio estaba al 85% de área y tuve que recortar bastante para que entrara.</p>
+<pre>
+ RP2350 (MicroPython): texto -> fonemas -> cada 5 ms escribe B1,B2,B3,tono,vol
+        |
+        v
+ +---------------------------- tile ----------------------------+
+ |  sierra / LFSR -> F1 -> F2 -> F3 -> x vol -> sigma-delta ---------> uo[0]
+ |                   (los 4 comparten un multiplicador)          |
+ +---------------------------------------------------------------+
+                                       uo[0] -> filtro RC -> amplificador
+</pre>
+<p>Detalles que me costaron:</p>
+<ul>
+  <li>La "u", la "o" y la "m" saturaban los filtros. Le puse a la fuente una atenuación de 2 bits por fonema y calibré cada fonema a mano.</li>
+  <li>El volumen se aplica al final, no a la entrada, para no perder resolución.</li>
+  <li>Los estados (14 bits) van en un anillo que rota, así no necesito multiplexores para leerlos.</li>
+</ul>
+
+<h2>Registros</h2>
+<p class="small">Se escriben con uio[7] como strobe, dirección en uio[6:4] y 12 bits de dato en {uio[3:0], ui[7:0]}.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>dir</th><th>nombre</th><th>contenido</th></tr>
+  <tr><td>0, 1, 2</td><td>B1, B2, B3</td><td>coeficientes Q2.10 (de B3 solo se guardan 7 bits)</td></tr>
+  <tr><td>3</td><td>tono</td><td>10 bits, F0 = inc*fs/8192</td></tr>
+  <tr><td>4</td><td>vol/modo</td><td>[7:0] volumen, [9:8] modo (silencio/voz/ruido/mezcla), [11:10] atenuación</td></tr>
+</table>
+</div>
+
+<h2>Layout</h2>
+<div id="layout">
+<!--LAYOUT-->
+</div>
+
+<hr>
+<p class="small">Código, tests y WAVs: <a href="https://github.com/glimmerquark-cloud/tt-voz-formantes" target="_blank" rel="noopener">github.com/glimmerquark-cloud/tt-voz-formantes</a>. Si algo no suena o encuentras un error, avísame.</p>
 </div>
 
 <script>
