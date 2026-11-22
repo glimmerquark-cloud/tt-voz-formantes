@@ -1,42 +1,31 @@
-![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
+![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+# Sintetizador de voz por formantes que habla español — Tiny Tapeout GF180
 
-- [Read the documentation for project](docs/info.md)
+Tile 1x1 (GF180) que sintetiza voz en tiempo real.
 
-## What is Tiny Tapeout?
+**Del lado de la tarjeta.** El RP2350 convierte texto en fonemas y manda un frame cada 5 ms con F1/F2/F3, pitch, amplitud y tipo de fuente.
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital and analog designs manufactured on a real chip.
+**Del lado del chip:**
+- Diente de sierra glotal o ruido LFSR.
+- 3 resonadores IIR en cascada que comparten un solo multiplicador serial.
+- Modulador sigma-delta: la salida de audio ocupa un solo pin.
 
-To learn more and get started, visit https://tinytapeout.com.
+| Archivo | Qué es |
+|---|---|
+| `src/project.v` | RTL (`tt_um_glimmerquark_voz`) |
+| `test/voz_model.py` | modelo Python bit-exacto |
+| `test/test.py` | pruebas cocotb RTL contra el modelo |
+| `demo/voz_es.py` | texto en español → fonemas → frames (CPython y MicroPython) |
+| `demo/main_voz.py` | demo para la tarjeta Tiny Tapeout |
+| `sim/make_wavs.py` | genera `wav/*.wav` desde la simulación RTL y lo verifica contra el modelo |
+| `docs/info.md` | hoja de datos |
 
-## Set up your Verilog project
+## Correr localmente (Windows, sin make)
 
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
+```
+python sim/run_tests.py     # pruebas cocotb
+python sim/make_wavs.py     # WAVs desde el RTL
+```
 
-The GitHub action will automatically build the ASIC files using [LibreLane](https://www.zerotoasiccourse.com/terminology/librelane/).
-
-## Enable GitHub actions to build the results page
-
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
-
-## Resources
-
-- [FAQ](https://tinytapeout.com/faq/)
-- [Digital design lessons](https://tinytapeout.com/digital_design/)
-- [Learn how semiconductors work](https://tinytapeout.com/siliwiz/)
-- [Join the community](https://tinytapeout.com/discord)
-- [Build your design locally](https://www.tinytapeout.com/guides/local-hardening/)
-
-## What next?
-
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
-  - Bluesky [@tinytapeout.com](https://bsky.app/profile/tinytapeout.com)
+Requisitos: OSS CAD Suite (iverilog) en el PATH y `pip install cocotb==2.1.0`.
