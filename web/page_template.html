@@ -1,0 +1,351 @@
+<title>Chip que habla</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: hoja de datos de laboratorio. Columna unica; el "instrumento" (entrada + trazas) arriba, el chip explicado abajo. */
+:root {
+  --bg: #eef1f5;
+  --panel: #ffffff;
+  --ink: #15203a;
+  --muted: #5b6680;
+  --line: #d3d9e4;
+  --accent: #3b46c9;
+  --accent-soft: #e3e5fb;
+  --f1: #c2410c;
+  --f2: #0f766e;
+  --f3: #7c3aed;
+  --wave: #15203a;
+  --grid: #e4e8ef;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1424; --panel: #151d31; --ink: #e6eaf4; --muted: #95a0ba; --line: #2a3550;
+    --accent: #8f97ff; --accent-soft: #232a52; --f1: #fb923c; --f2: #2dd4bf; --f3: #c4a1ff;
+    --wave: #dfe5f3; --grid: #1f2840; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1424; --panel: #151d31; --ink: #e6eaf4; --muted: #95a0ba; --line: #2a3550;
+  --accent: #8f97ff; --accent-soft: #232a52; --f1: #fb923c; --f2: #2dd4bf; --f3: #c4a1ff;
+  --wave: #dfe5f3; --grid: #1f2840; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px; }
+header { display: flex; flex-direction: column; gap: 6px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 700 clamp(30px, 5vw, 44px)/1.05 var(--display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font: 700 20px/1.2 var(--display); margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 64ch; margin: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+textarea { width: 100%; min-height: 64px; resize: vertical; font: 500 20px/1.35 var(--body); color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+textarea:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: 600 14px/1 var(--body); border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 14px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); padding: 11px 20px; font-size: 15px; }
+button.chip { font-weight: 500; font-size: 13px; padding: 7px 11px; }
+button:hover { border-color: var(--accent); }
+label.ctl { display: flex; align-items: center; gap: 8px; font: 13px var(--mono); color: var(--muted); }
+label.ctl output { min-width: 3.5ch; color: var(--ink); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 110px; accent-color: var(--accent); }
+.phon { display: flex; flex-wrap: wrap; gap: 4px; font: 500 14px/1 var(--mono); }
+.phon span { padding: 6px 7px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line); }
+.phon span.ton { border-color: var(--accent); }
+.phon span.pause { color: var(--muted); }
+.phon span.on { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.scope { width: 100%; display: block; border-radius: 6px; background: var(--bg); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font: 12px var(--mono); color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+.stat { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.diagram { overflow-x: auto; }
+.diagram svg { min-width: 640px; width: 100%; height: auto; display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+td, th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+td.num, td code { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); }
+.note { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Tiny Tapeout GF180 · tile 1x1 · tt_um_glimmerquark_voz</span>
+    <h1>Chip que habla</h1>
+    <p class="lede">Escribe en español y escucha la voz del chip. El sonido sale del <strong>modelo bit-exacto</strong> del silicio: cada muestra es la misma que produce el RTL en simulación. Corre a 9765.6 Hz con muestras de 8 bits.</p>
+  </header>
+
+  <section class="panel" aria-label="Sintetizador">
+    <textarea id="txt" aria-label="Texto a decir">Hola, IEEE</textarea>
+    <div class="row">
+      <button class="primary" id="hablar">▶ Hablar</button>
+      <button class="chip" data-t="Hola, IEEE">Hola, IEEE</button>
+      <button class="chip" data-t="a, e, i, o, u">Vocales</button>
+      <button class="chip" data-t="Hola, soy un chip de silicio que habla español.">Presentación</button>
+      <button class="chip" data-t="Buenos días, Open Silicon dos mil veintiséis.">Bootcamp</button>
+    </div>
+    <div class="row">
+      <label class="ctl" for="tono">tono <input type="range" id="tono" min="0.6" max="1.8" step="0.05" value="1"><output id="tonoV">1.00</output></label>
+      <label class="ctl" for="tasa">velocidad <input type="range" id="tasa" min="0.6" max="1.6" step="0.05" value="1"><output id="tasaV">1.00</output></label>
+      <span class="stat" id="stat"></span>
+    </div>
+    <div class="phon" id="phon" aria-label="Fonemas"></div>
+  </section>
+
+  <section class="panel" aria-label="Trazas">
+    <div class="row" style="justify-content:space-between">
+      <h2>Formantes y salida</h2>
+      <div class="legend"><span><i style="background:var(--f1)"></i>F1</span><span><i style="background:var(--f2)"></i>F2</span><span><i style="background:var(--f3)"></i>F3</span><span><i style="background:var(--wave)"></i>out8</span></div>
+    </div>
+    <canvas class="scope" id="track" height="300" aria-label="Formantes en el tiempo y forma de onda de salida"></canvas>
+    <div class="grid2">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <span class="eyebrow">Fuente (diente de sierra / ruido) · 40 ms</span>
+        <canvas class="scope" id="zsrc" height="120" aria-label="Detalle de la fuente"></canvas>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <span class="eyebrow">Salida tras F1·F2·F3 · 40 ms</span>
+        <canvas class="scope" id="zout" height="120" aria-label="Detalle de la salida"></canvas>
+      </div>
+    </div>
+    <p class="note">Haz clic en la traza de arriba para ver de cerca ese momento.</p>
+  </section>
+
+  <section class="panel" aria-label="Arquitectura">
+    <h2>Cómo lo hace el chip</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 900 250" role="img" aria-label="Diagrama de bloques">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+        <g font-family="var(--mono)" font-size="12" fill="var(--ink)">
+          <rect x="12" y="12" width="876" height="54" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="28" y="35" font-family="var(--display)" font-size="15" font-weight="700">RP2350 (MicroPython)</text>
+          <text x="28" y="55" fill="var(--muted)">texto → fonemas → cada 5 ms escribe B1, B2, B3, pitch, amplitud/modo por ui_in + uio_in</text>
+          <line x1="450" y1="66" x2="450" y2="96" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+          <rect x="12" y="100" width="876" height="138" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+          <text x="28" y="122" fill="var(--muted)">chip · 10 MHz · 1024 ciclos por muestra · usa 62</text>
+          <rect x="28" y="140" width="128" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="40" y="164">fuente</text><text x="40" y="184" fill="var(--muted)" font-size="11">sierra · LFSR</text>
+          <rect x="186" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f1)"/>
+          <text x="198" y="164">F1</text><text x="198" y="184" fill="var(--muted)" font-size="11">2 polos</text>
+          <rect x="312" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f2)"/>
+          <text x="324" y="164">F2</text><text x="324" y="184" fill="var(--muted)" font-size="11">2 polos</text>
+          <rect x="438" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--f3)"/>
+          <text x="450" y="164">F3</text><text x="450" y="184" fill="var(--muted)" font-size="11">2 polos</text>
+          <rect x="564" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="576" y="164">× amp</text><text x="576" y="184" fill="var(--muted)" font-size="11">8 bits</text>
+          <rect x="690" y="140" width="96" height="62" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="702" y="164">ΣΔ 1er</text><text x="702" y="184" fill="var(--muted)" font-size="11">orden</text>
+          <text x="808" y="168">uo[0]</text><text x="808" y="186" fill="var(--muted)" font-size="11">→ RC</text>
+          <g stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)">
+            <line x1="156" y1="171" x2="184" y2="171"/><line x1="282" y1="171" x2="310" y2="171"/>
+            <line x1="408" y1="171" x2="436" y2="171"/><line x1="534" y1="171" x2="562" y2="171"/>
+            <line x1="660" y1="171" x2="688" y2="171"/><line x1="786" y1="171" x2="804" y2="171"/>
+          </g>
+          <path d="M234 202 v18 H612 v-18" fill="none" stroke="var(--accent)" stroke-dasharray="4 3"/>
+          <text x="300" y="232" fill="var(--accent)" font-size="11">un multiplicador serial (12 ciclos) y un sumador de 17 bits, compartidos</text>
+        </g>
+      </svg>
+    </div>
+    <div class="grid2">
+      <p>Cada resonador calcula <code>y[n] = B·y[n−1] − (1−2⁻⁴)·y[n−2] + x[n]</code>.</p>
+      <p>El coeficiente <code>B = 2r·cos(2πF/fs)</code> elige la frecuencia del formante. El ancho de banda es fijo, ~97 Hz, y por eso el término en y[n−2] se reduce a un corrimiento y una resta.</p>
+      <p>Los estados son de 14 bits con saturación y van en un anillo que rota, así no hacen falta multiplexores de lectura.</p>
+      <p>La amplitud se aplica a la salida. La fuente siempre entra a los filtros a escala completa, con una atenuación de 2⁻ˢʰ elegida por fonema para que ningún resonador sature. Así el ruido de redondeo queda abajo.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <tr><th>addr</th><th>registro</th><th>formato</th></tr>
+        <tr><td class="num">0–2</td><td>B1, B2, B3</td><td>Q2.10 con signo; B3 guarda 7 bits (~25 Hz de resolución)</td></tr>
+        <tr><td class="num">3</td><td>pitch</td><td>10 bits, F0 = inc · fs / 8192 (pasos de 1.19 Hz)</td></tr>
+        <tr><td class="num">4</td><td>amp / modo / sh</td><td>[7:0] amplitud · [9:8] silencio, voz, ruido, mixto · [11:10] atenuación 2⁻ˢʰ</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Layout" id="layout">
+    <h2>Layout</h2>
+    <!--LAYOUT-->
+  </section>
+
+  <p class="note">Código, pruebas cocotb y WAVs de simulación RTL en <a href="https://github.com/glimmerquark-cloud/tt-voz-formantes" target="_blank" rel="noopener">github.com/glimmerquark-cloud/tt-voz-formantes</a>. Autor: Irvin Ariel Madrid Castillo · IEEE Open Silicon 2026.</p>
+</div>
+
+<script>
+/*VOZJS*/
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let data = null, ctx = null, playing = null, sel = 0;
+
+  function sintetizar() {
+    const tono = +$('tono').value, tasa = +$('tasa').value;
+    const fon = Voz.textoAFonemas($('txt').value);
+    const frames = Voz.fonemasAFrames(fon, 135 * tono, 100 * tono, tasa);
+    const { out, src } = Voz.render(frames);
+    // inicio (en frames) de cada fonema, para resaltarlo al sonar
+    const starts = []; let acc = 0;
+    // reconstruye los limites con las mismas duraciones que el generador
+    for (const [f, ton] of fon) {
+      starts.push(acc);
+      const d = Math.max(1, Math.round(Voz.FON[f][5] * (ton ? 1.3 : 1) / tasa / 5));
+      acc += Voz.FON[f][6] === 'p' ? d * 4 : d;
+    }
+    data = { fon, frames, out, src, starts };
+    sel = 0;
+    pintarFonemas(-1);
+    $('stat').textContent = `${fon.length} fonemas · ${frames.length} frames · ${out.length} muestras · ${(out.length / Voz.FS).toFixed(2)} s`;
+    dibujar();
+  }
+
+  function pintarFonemas(activo) {
+    const el = $('phon'); el.innerHTML = '';
+    data.fon.forEach(([f, ton], i) => {
+      const s = document.createElement('span');
+      s.textContent = f === '_' ? '‖' : f === '.' ? '‖‖' : f + (ton ? 'ˈ' : '');
+      if (ton) s.classList.add('ton');
+      if (f === '_' || f === '.') s.classList.add('pause');
+      if (i === activo) s.classList.add('on');
+      el.appendChild(s);
+    });
+  }
+
+  function fit(cv) {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    const h = +cv.getAttribute('height');
+    cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.round(h * dpr);
+    cv.style.height = h + 'px';
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { g, w: r.width, h };
+  }
+
+  function dibujar(playhead) {
+    if (!data) return;
+    const { g, w, h } = fit($('track'));
+    const top = 18, fh = 168, wy = 214, wh = 70;
+    g.fillStyle = css('--bg'); g.fillRect(0, 0, w, h);
+    const left = 44, pw = w - left - 8;
+    const n = data.frames.length;
+    // rejilla de frecuencia
+    g.strokeStyle = css('--grid'); g.fillStyle = css('--muted'); g.font = '11px ' + css('--mono'); g.lineWidth = 1;
+    for (const hz of [0, 1000, 2000, 3000, 4000]) {
+      const y = top + fh - hz / 4000 * fh;
+      g.beginPath(); g.moveTo(left, y); g.lineTo(left + pw, y); g.stroke();
+      g.fillText(hz === 0 ? '0' : (hz / 1000) + 'k', 8, y + 4);
+    }
+    g.fillText('Hz', 8, top - 6);
+    // formantes (desde B: F = acos(B/2r)·fs/2pi), atenuados donde no suena
+    const R = Math.sqrt(1 - 1 / 16);
+    const cols = [css('--f1'), css('--f2'), css('--f3')];
+    for (let q = 0; q < 3; q++) {
+      g.strokeStyle = cols[q]; g.lineWidth = 2.2;
+      g.beginPath(); let pen = false;
+      for (let i = 0; i < n; i++) {
+        const fr = data.frames[i];
+        const b = q === 2 ? (((fr[2] & 0xFE0) | 0x010) << 20 >> 20) : fr[q];
+        const f = Math.acos(Math.max(-1, Math.min(1, b / 1024 / (2 * R)))) * Voz.FS / (2 * Math.PI);
+        const x = left + (i + 0.5) / n * pw, y = top + fh - Math.min(f, 4000) / 4000 * fh;
+        const sound = fr[4] > 0 && fr[5] > 0;
+        if (sound) { pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true; } else pen = false;
+      }
+      g.stroke();
+    }
+    // forma de onda
+    const out = data.out, N = out.length;
+    g.strokeStyle = css('--grid'); g.beginPath(); g.moveTo(left, wy); g.lineTo(left + pw, wy); g.stroke();
+    g.fillStyle = css('--muted'); g.fillText('out8', 8, wy + 4);
+    g.strokeStyle = css('--wave'); g.lineWidth = 1; g.beginPath();
+    const cols2 = Math.floor(pw);
+    for (let c = 0; c < cols2; c++) {
+      const a = Math.floor(c / cols2 * N), b = Math.max(a + 1, Math.floor((c + 1) / cols2 * N));
+      let mn = 127, mx = -128;
+      for (let i = a; i < b; i++) { if (out[i] < mn) mn = out[i]; if (out[i] > mx) mx = out[i]; }
+      g.moveTo(left + c + .5, wy - mx / 128 * wh / 2); g.lineTo(left + c + .5, wy - mn / 128 * wh / 2 + .5);
+    }
+    g.stroke();
+    // seleccion y cursor
+    const sx = left + sel / N * pw;
+    g.fillStyle = css('--accent-soft'); g.globalAlpha = .55;
+    g.fillRect(sx, top - 4, Math.max(2, 0.04 * Voz.FS / N * pw), h - top);
+    g.globalAlpha = 1;
+    if (playhead != null) {
+      g.strokeStyle = css('--accent'); g.lineWidth = 2;
+      const x = left + playhead / N * pw; g.beginPath(); g.moveTo(x, 4); g.lineTo(x, h - 4); g.stroke();
+    }
+    zoom();
+  }
+
+  function zoom() {
+    const L = Math.round(0.04 * Voz.FS);
+    const a = Math.min(sel, Math.max(0, data.out.length - L));
+    for (const [id, arr, scale] of [['zsrc', data.src, 128], ['zout', data.out, 128]]) {
+      const { g, w, h } = fit($(id));
+      g.fillStyle = css('--bg'); g.fillRect(0, 0, w, h);
+      g.strokeStyle = css('--grid'); g.beginPath(); g.moveTo(0, h / 2); g.lineTo(w, h / 2); g.stroke();
+      g.strokeStyle = id === 'zsrc' ? css('--accent') : css('--wave'); g.lineWidth = 1.5; g.beginPath();
+      for (let i = 0; i < L; i++) {
+        const v = arr[a + i] || 0, x = i / (L - 1) * w, y = h / 2 - v / scale * (h / 2 - 6);
+        i ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.stroke();
+    }
+  }
+
+  async function hablar() {
+    sintetizar();
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume();
+      if (playing) { try { playing.stop(); } catch (e) {} }
+      const buf = ctx.createBuffer(1, data.out.length, Voz.FS);
+      const ch = buf.getChannelData(0);
+      for (let i = 0; i < data.out.length; i++) ch[i] = data.out[i] / 128;
+      const s = ctx.createBufferSource(); s.buffer = buf;
+      // RC pasabajas como el filtro externo de la tarjeta
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3800;
+      s.connect(lp).connect(ctx.destination);
+      const t0 = ctx.currentTime + 0.05; s.start(t0); playing = s;
+      const spf = Voz.SPF;
+      const tick = () => {
+        if (playing !== s) return;
+        const n = Math.floor((ctx.currentTime - t0) * Voz.FS);
+        if (n >= data.out.length) { pintarFonemas(-1); dibujar(); playing = null; return; }
+        if (n >= 0) {
+          const fr = Math.floor(n / spf);
+          let k = -1; for (let i = 0; i < data.starts.length; i++) if (data.starts[i] <= fr) k = i;
+          pintarFonemas(k); dibujar(n);
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    } catch (e) {
+      $('stat').textContent = 'El navegador no permitió reproducir audio: ' + e.message;
+    }
+  }
+
+  $('hablar').addEventListener('click', hablar);
+  document.querySelectorAll('button.chip').forEach(b => b.addEventListener('click', () => { $('txt').value = b.dataset.t; hablar(); }));
+  for (const id of ['tono', 'tasa']) $(id).addEventListener('input', () => { $(id + 'V').textContent = (+$(id).value).toFixed(2); });
+  $('txt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); hablar(); } });
+  $('track').addEventListener('click', e => {
+    const r = e.currentTarget.getBoundingClientRect(), left = 44, pw = r.width - left - 8;
+    sel = Math.max(0, Math.min(1, (e.clientX - r.left - left) / pw)) * data.out.length | 0; dibujar();
+  });
+  window.addEventListener('resize', () => dibujar());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => dibujar());
+  sintetizar();
+  // muestra de entrada: un tramo sonoro de la 'o'
+  sel = Math.round(0.06 * Voz.FS); dibujar();
+})();
+</script>
